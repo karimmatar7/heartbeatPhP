@@ -9,15 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('heartbeats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // FK relationship
-            $table->integer('heart_rate'); // Heart Rate
-            $table->integer('heart_beat'); // Heart Beats
-            $table->float('humidity'); // Humidity
+            $table->unsignedBigInteger('person_id'); 
+            $table->integer('heart_rate');
+            $table->integer('heart_beat');
+            $table->float('humidity', 8, 2);
             $table->timestamps();
+
+            // Define the foreign key
+            $table->foreign('person_id')
+                  ->references('id')
+                  ->on('people')
+                  ->onDelete('cascade'); // Optional: cascade delete
         });
     }
 
