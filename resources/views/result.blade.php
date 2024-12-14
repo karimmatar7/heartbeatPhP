@@ -35,18 +35,21 @@
 
         <!-- QR Code -->
         <div class="mb-6">
-            <img id="qr-code" src="" alt="QR Code to Download Photo" class="w-24 h-24" style="display: none;">
+        <img id="qr-code" src="data:image/png;base64,{{ $qrCodeUrl }}" alt="QR Code to Download Photo" class="w-24 h-24" style="display: {{ $qrCodeUrl ? 'block' : 'none' }};">
         </div>
+        <div class="flex items-center space-x-4 mt-8">
+    <!-- End Button -->
+    <a href="{{ url('/') }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">
+        {{ $language === 'nl' ? 'Einde' : ($language === 'fr' ? 'Fin' : ($language === 'de' ? 'Ende' : 'End')) }}
+    </a>
 
-        <!-- End Button -->
-        <a href="{{ url('/') }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg mt-8">
-            {{ $language === 'nl' ? 'Einde' : ($language === 'fr' ? 'Fin' : ($language === 'de' ? 'Ende' : 'End')) }}
-        </a>
+    <!-- Info Button -->
+    <a href="{{ url($language . '/show/' . $personId) }}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg">
+        {{ $language === 'nl' ? 'Info' : ($language === 'fr' ? 'Info' : ($language === 'de' ? 'Info' : 'Info')) }}
+    </a>
+</div>
 
-        <!-- Info Button -->
-        <a href="{{ url('/show/' . $personId) }}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg mt-8 ml-4">
-            {{ $language === 'nl' ? 'Info' : ($language === 'fr' ? 'Info' : ($language === 'de' ? 'Info' : 'Info')) }}
-        </a>
+
     </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/2.18.8/mqtt.min.js"></script>

@@ -225,13 +225,82 @@ Route::post('/api/sensor-data', function (Request $request) {
 });
 
 // Show Person Info (Optional)
-Route::get('/show/{id}', function ($id) {
+Route::get('{language}/show/{id}', function ($language, $id) {
+    App::setLocale($language);  // Set locale based on the language passed
+    
     $person = Person::find($id);
     if (!$person) {
-        return response()->json(['message' => 'Person not found'], 404);
+        return response()->json(['message' => __('messages.person_not_found')], 404);
     }
-    return view('info', ['person' => $person]);
+
+    // Get necessary data
+    $heartrate = $person->heart_rate;
+    $bodytemp = $person->bodytemp;
+    $time = now()->format('H:i:s');
+    
+    // Execute Python script for image generation
+    $scriptPath = base_path('scripts/GenerateImage.py');
+    $outputPath = public_path('generated_image.png');  // Save the image locally
+    $command = escapeshellcmd("python3 $scriptPath --heartrate $heartrate --bodytemp $bodytemp --time $time --output $outputPath");
+    exec($command, $output, $returnVar);
+
+    if ($returnVar !== 0) {
+        return response()->json(['error' => __('messages.image_generation_failed')], 500);
+    }
+
+    // Generate dynamic prompt
+    $prompt = generate_dynamic_prompt($heartrate, $bodytemp, $time);
+    $imageUrl = asset('generated_image.png');  // URL for the generated image
+
+    return view('info', [
+        'person' => $person,
+        'generatedPrompt' => $prompt,
+        'photoUrl' => $imageUrl,
+        'language' => $language  // Pass the language to the view
+    ]);
 })->name('show');
+
+
+function generate_dynamic_prompt($heartrate, $bodytemp, $time) {
+    // Define your JSON-like structure in PHP
+    $prompt_data = [
+        'temperature' => [
+            ["prompt" => "icy, crystalline textures with frosted white highlights", "parameters" => ["min" => 0, "max" => 35.0]],
+            ["prompt" => "cool, pale blue gradients with delicate textures", "parameters" => ["min" => 35.0, "max" => 35.5]],
+            // add the other temperature values...
+        ],
+        'heartrate' => [
+            ["prompt" => "soft, slow-moving blue waves with gentle transitions", "parameters" => ["min" => 0, "max" => 40]],
+            ["prompt" => "calm, flowing blue shapes with subtle pulsations", "parameters" => ["min" => 40, "max" => 50]],
+            // add the other heartrate values...
+        ],
+        'timestamp' => [
+            ["prompt" => "soft, pastel tones with delicate movements", "parameters" => ["min" => 0, "max" => 5]],
+            ["prompt" => "calm, flowing gradients with subtle contrasts", "parameters" => ["min" => 5, "max" => 10]],
+            // add the other timestamp values...
+        ],
+    ];
+
+    // Function to get the appropriate prompt based on range
+    function get_prompt_from_json($category, $value, $prompt_data) {
+        foreach ($prompt_data[$category] as $item) {
+            if ($item["parameters"]["min"] <= $value && $value < $item["parameters"]["max"]) {
+                return $item["prompt"];
+            }
+        }
+        return "No matching prompt found.";
+    }
+
+    // Generate dynamic prompt
+    $hr_element = get_prompt_from_json("heartrate", $heartrate, $prompt_data);
+    $temp_element = get_prompt_from_json("temperature", $bodytemp, $prompt_data);
+    $minutes = (int)substr($time, 3, 2);  // Extract minutes from time (HH:MM:SS)
+    $time_element = get_prompt_from_json("timestamp", $minutes, $prompt_data);
+
+    $prompt = "An abstract composition featuring $hr_element, enhanced by $temp_element. and is completed with $time_element. The elements blend seamlessly to create a cohesive and evocative image.";
+    
+    return $prompt;
+}
 
 
 // Update Person Senses (Optional)
