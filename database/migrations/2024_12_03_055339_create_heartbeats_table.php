@@ -14,15 +14,14 @@ return new class extends Migration
         Schema::create('heartbeats', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('person_id'); 
-            $table->integer('heart_rate');
+            $table->integer('temperature');
             $table->integer('heart_beat');
-            $table->float('humidity', 8, 2);
             $table->timestamps();
 
             // Define the foreign key
             $table->foreign('person_id')
                   ->references('id')
-                  ->on('people')
+                  ->on('person')
                   ->onDelete('cascade'); // Optional: cascade delete
         });
     }

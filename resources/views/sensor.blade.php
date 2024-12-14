@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Sensor - {{ ucfirst($language) }}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -32,10 +33,10 @@
                 {{ $language === 'nl' ? 'Je moet je hand op de scanner plaatsen om door te gaan!' : ($language === 'fr' ? 'Vous devez placer votre main sur le capteur pour continuer!' : ($language === 'de' ? 'Sie müssen Ihre Hand auf den Sensor legen, um fortzufahren!' : 'You must place your hand on the scanner to continue!')) }}
             </p>
 
-            <img src="{{ asset('images/privacy.png') }}"  alt="Sensor Image" class="mb-6 w-40 h-40 object-contain">
+            <img src="{{ asset('images/privacy.png') }}" alt="Sensor Image" class="mb-6 w-40 h-40 object-contain">
 
             <!-- Form -->
-            <form id="sensor-form" method="POST" action="{{ route('form.submit-sensor', ['language' => $language]) }}" class="w-full max-w-md text-center">
+            <form id="sensor-form" method="POST" action="{{ route('form.submit-sensor', ['language' => $language, 'person_id' => $personId]) }}" class="w-full max-w-md text-center">
                 @csrf
                 <input type="hidden" name="name" value="{{ $name }}">
                 <input type="hidden" name="age" value="{{ $age }}">
@@ -49,9 +50,9 @@
                     {{ $language === 'nl' ? 'Doorgaan' : ($language === 'fr' ? 'Continuer' : ($language === 'de' ? 'Weiter' : 'Continue')) }}
                 </button>
             </form>
+
         </div>
-
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/2.18.8/mqtt.min.js"></script>
 
         <script>
             const form = document.getElementById('sensor-form');
@@ -69,6 +70,42 @@
                     warningMessage.style.display = 'block';
                 }
             });
+
+
+
+            // Form submission
+            const hostIP = "192.168.0.21";
+            const port = 9001;
+
+            // Connect to the MQTT server
+            var client = mqtt.connect('ws://' + hostIP + ':' + port);
+
+            // On successful connection, subscribe to topics
+            client.on('connect', function() {
+                console.log("Connected to MQTT broker");
+                client.subscribe('heartbeatcommence', function(err) {
+                    if (!err) {
+                        console.log("Subscribed to heartbeatcommence");
+                    }
+                });
+            });
+
+            // send a message to the topic 'heartbeatcommence' when submitting the form
+            form.addEventListener('submit', () => {
+                client.publish('heartbeatcommence', 'play');
+                console.log('Message sent to topic heartbeatcommence');
+            });
+            // .addEventListener('click', () => {
+            //     client.publish('heartbeatcommence', 'play');
+            //     console.log('Message sent to topic heartbeatcommence');
+            // });
         </script>
+
+
+
+
+        </div>
+
+
     </body>
 </html>

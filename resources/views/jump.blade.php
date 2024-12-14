@@ -3,7 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Jump Instructions</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <title>Photo Generation</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             #loading-text {
@@ -29,43 +31,41 @@
         </div>
 
         <script>
-            const instructions = [
-                "{{ $language === 'nl' ? 'Spring 3 keer in de lucht.' : ($language === 'fr' ? 'Sautez 3 fois dans les airs.' : ($language === 'de' ? 'Springen Sie 3 Mal in die Luft.' : 'Jump 3 times in air.')) }}",
-                "{{ $language === 'nl' ? 'Spring 2 keer in de lucht.' : ($language === 'fr' ? 'Sautez 2 fois dans les airs.' : ($language === 'de' ? 'Springen Sie 2 Mal in die Luft.' : 'Jump 2 times in air.')) }}",
-                "{{ $language === 'nl' ? 'Spring 1 keer in de lucht.' : ($language === 'fr' ? 'Sautez 1 fois dans les airs.' : ($language === 'de' ? 'Springen Sie 1 Mal in die Luft.' : 'Jump 1 time in air.')) }}"
-            ];
+    const instructions = [
+        "{{ $language === 'nl' ? 'Je unieke foto wordt gegenereerd. Even geduld...' : ($language === 'fr' ? 'Votre photo unique est en cours de génération. Veuillez patienter...' : ($language === 'de' ? 'Ihr einzigartiges Foto wird generiert. Bitte warten...' : 'Your unique photo is being generated. Please wait...')) }}",
+        "{{ $language === 'nl' ? 'Bijna klaar! Nog een ogenblik geduld...' : ($language === 'fr' ? 'Presque prêt ! Encore un instant...' : ($language === 'de' ? 'Fast fertig! Noch einen Moment...' : 'Almost ready! Just a moment more...')) }}"
+    ];
 
-            let index = 0;
-            const loadingText = document.getElementById('loading-text');
-            const progressBar = document.getElementById('progress-bar');
+    let index = 0;
+    const loadingText = document.getElementById('loading-text');
+    const progressBar = document.getElementById('progress-bar');
 
-            const showInstruction = () => {
-                if (index >= instructions.length) {
-                    // Redirect to the result page after the last instruction
-                    window.location.href = "{{ route('form.result', ['language' => $language]) }}";
-                    return;
-                }
+    const showInstruction = () => {
+        if (index >= instructions.length) {
+            // Redirect to the result page after the last instruction with the person's id
+            window.location.href = "{{ route('form.result', ['language' => $language, 'person_id' => $personId]) }}";
+            return;
+        }
 
-                // Set the instruction text
-                loadingText.innerText = instructions[index];
-                loadingText.style.opacity = 1;
+        // Set the instruction text
+        loadingText.innerText = instructions[index];
+        loadingText.style.opacity = 1;
 
-                // Update progress bar
-                const progress = ((index + 1) / instructions.length) * 100;
-                progressBar.style.width = `${progress}%`;
+        // Update progress bar
+        const progress = ((index + 1) / instructions.length) * 100;
+        progressBar.style.width = `${progress}%`;
 
-                // Fade out the text after 3 seconds
-                setTimeout(() => {
-                    loadingText.style.opacity = 0;
+        // Fade out the text after 8 seconds (5 seconds longer than before)
+        setTimeout(() => {
+            loadingText.style.opacity = 0;
 
-                    // Move to the next instruction
-                    index++;
-                    setTimeout(showInstruction, 1000); // Wait for fade-out to complete
-                }, 3000);
-            };
+            // Move to the next instruction
+            index++;
+            setTimeout(showInstruction, 500); // Wait for fade-out to complete
+        }, 1000); // Extended time for each instruction
+    };
 
-            // Start the sequence
-            showInstruction();
-        </script>
+    showInstruction();
+</script>
     </body>
 </html>
