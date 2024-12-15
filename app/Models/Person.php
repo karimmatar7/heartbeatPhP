@@ -13,5 +13,5 @@ class Person extends Model
     protected $table = 'person'; // <-- This should match your table name
 
     // Define the fillable fields
-    protected $fillable = ['name', 'age', 'bodytemp', 'heart_rate'];
+    protected $fillable = ['name', 'age', 'bodytemp', 'heart_rate', 'generated_image_url'];  
 }
