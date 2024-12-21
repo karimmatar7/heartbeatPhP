@@ -115,7 +115,8 @@ class PersonController extends Controller
         // Generate a unique filename based on the current timestamp
         $uniqueFilename = 'generated_image_' . time() . '.png';
         $outputPath = public_path($uniqueFilename);
-    
+        $generatedPrompt = $this->generate_dynamic_prompt($heartrate, $bodytemp, $time);
+
         // Command to execute the Python script with the heart rate, body temperature, and time
         $command = escapeshellcmd("python3 $scriptPath --heartrate $heartrate --bodytemp $bodytemp --time $time --output $outputPath");
         
@@ -160,6 +161,8 @@ class PersonController extends Controller
             'qrCodeUrl' => $qrCodeUrl,  // Base64 encoded QR code for the image URL
             'person' => $person,
             'personId' => $person_id,
+            'generatedPrompt' => $generatedPrompt,
+
         ]);
     }
     

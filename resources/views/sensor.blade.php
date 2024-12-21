@@ -43,7 +43,7 @@
 
                 <button
                     type="submit"
-                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-all"
                     id="submit-button"
                     disabled
                 >
@@ -74,7 +74,7 @@
 
 
             // Form submission
-            const hostIP = "192.168.0.21";
+            const hostIP = "192.168.0.95";
             const port = 9001;
 
             // Connect to the MQTT server
@@ -91,10 +91,19 @@
             });
 
             // send a message to the topic 'heartbeatcommence' when submitting the form
-            form.addEventListener('submit', () => {
-                client.publish('heartbeatcommence', 'play');
-                console.log('Message sent to topic heartbeatcommence');
-            });
+            form.addEventListener('submit', (event) => {
+    if (submitButton.disabled) {
+        event.preventDefault();
+        warningMessage.style.display = 'block';
+    } else {
+        event.preventDefault(); // Prevent the page from reloading immediately
+        client.publish('heartbeatcommence', 'play', {}, () => {
+            console.log('Message sent to topic heartbeatcommence');
+            form.submit(); // Manually submit the form after the message is sent
+        });
+    }
+});
+
             // .addEventListener('click', () => {
             //     client.publish('heartbeatcommence', 'play');
             //     console.log('Message sent to topic heartbeatcommence');
